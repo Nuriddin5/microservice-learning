@@ -2,13 +2,16 @@ package com.nuriddin.customer;
 
 import com.nuriddin.clients.fraud.FraudCheckResponse;
 import com.nuriddin.clients.fraud.FraudClient;
+import com.nuriddin.clients.notification.NotificationClient;
+import com.nuriddin.clients.notification.NotificationRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public record CustomerService(CustomerRepository customerRepository,
                               RestTemplate restTemplate,
-                              FraudClient fraudClient) {
+                              FraudClient fraudClient,
+                              NotificationClient notificationClient) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
         Customer customer = Customer.builder()
@@ -23,5 +26,11 @@ public record CustomerService(CustomerRepository customerRepository,
         if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("Customer is fraudster");
         }
+        notificationClient.sendNotification(new NotificationRequest(
+                customer.getId(),
+                customer.getEmail(),
+                String.format("Assalomu alaykum %s, welcome to Nuriddin's code",customer.getFirstName())
+        ));
+
     }
 }
