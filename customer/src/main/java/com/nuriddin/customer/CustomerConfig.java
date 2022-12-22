@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 public class CustomerConfig {
     @Bean
     @LoadBalanced
+    //todo think about loadbalancing in openfeign
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
