@@ -1,5 +1,6 @@
 package com.nuriddin.fraud;
 
+import com.nuriddin.clients.fraud.FraudCheckResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public record FraudController(FraudCheckService fraudCheckService) {
 
     @GetMapping(path = "{customerId}")
-    public FraudCheckResponse isFraudster(@PathVariable Integer customerId) {
+    public FraudCheckResponse isFraudster(@PathVariable("customerId") Integer customerId) {
         boolean isFraudulentCustomer = fraudCheckService.isFraudulentCustomer(customerId);
 
         log.info("fraud check request for customer {}", customerId);
