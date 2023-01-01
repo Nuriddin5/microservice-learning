@@ -1,5 +1,6 @@
 package com.nuriddin.customer;
 
+import com.nuriddin.amqp.RabbitMQMessageProducer;
 import com.nuriddin.clients.fraud.FraudCheckResponse;
 import com.nuriddin.clients.fraud.FraudClient;
 import com.nuriddin.clients.notification.NotificationClient;
@@ -11,7 +12,8 @@ import org.springframework.web.client.RestTemplate;
 public record CustomerService(CustomerRepository customerRepository,
                               RestTemplate restTemplate,
                               FraudClient fraudClient,
-                              NotificationClient notificationClient) {
+                              NotificationClient notificationClient,
+                              RabbitMQMessageProducer rabbitMQMessageProducer) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
         Customer customer = Customer.builder()
@@ -26,11 +28,14 @@ public record CustomerService(CustomerRepository customerRepository,
         if (fraudCheckResponse.isFraudster()) {
             throw new IllegalStateException("Customer is fraudster");
         }
-        notificationClient.sendNotification(new NotificationRequest(
+
+        NotificationRequest notificationRequest = new NotificationRequest(
                 customer.getId(),
                 customer.getEmail(),
-                String.format("Assalomu alaykum %s, welcome to Nuriddin's code",customer.getFirstName())
-        ));
+                String.format("Assalomu alaykum %s, welcome to Nuriddin's code", customer.getFirstName())
+        );
+//        notificationClient.sendNotification(notificationRequest);
 
+        rabbitMQMessageProducer.publish(notificationRequest, "internal.exchange", "internal.notification.routing-key");
     }
 }
